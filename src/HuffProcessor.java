@@ -107,6 +107,7 @@ public class HuffProcessor {
 					}
 					else {
 						out.writeBits(BITS_PER_WORD, current.myValue);
+						current = root;
 					}
 				}
 			}
