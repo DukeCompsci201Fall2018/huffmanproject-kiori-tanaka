@@ -42,14 +42,41 @@ public class HuffProcessor {
 	 *            Buffered bit stream writing to the output file.
 	 */
 	public void compress(BitInputStream in, BitOutputStream out){
-
-		while (true){
-			int val = in.readBits(BITS_PER_WORD);
-			if (val == -1) break;
-			out.writeBits(BITS_PER_WORD, val);
-		}
+		int[] counts = readForCounts(in);
+		HuffNode root = makeTreeCounts(counts);
+		String[] codings = makeCodingFromTree(root);
+		
+		out.writeBits(BITS_PER_INT, HUFF_TREE);
+		writeHeader(root,out);
+		in.reset();
+		writeCompressedBits(codings,in,out);
+		
+//		while (true){
+//			int val = in.readBits(BITS_PER_WORD);
+//			if (val == -1) break;
+//			out.writeBits(BITS_PER_WORD, val);
+//		}
 		out.close();
 	}
+	
+	private int[] readForCounts(BitInputStream in) {
+		int[] freq = new int[ALPH_SIZE+1];
+		freq[PSEUDO_EOF] = 1;
+		int bits = in.readBits(BITS_PER_WORD);
+		while (bits != -1) {
+			freq[bits]++;
+		}
+		return freq;
+	}
+	
+	private
+	
+	private writeHeader(HuffNode root, BitOutputStream out) {
+		
+	}
+	
+	
+	
 	/**
 	 * Decompresses a file. Output file must be identical bit-by-bit to the
 	 * original.
@@ -76,7 +103,7 @@ public class HuffProcessor {
 		out.close();
 	}
 	
-	public HuffNode readTreeHeader(BitInputStream in) {
+	private HuffNode readTreeHeader(BitInputStream in) {
 		//HuffNode current = new HuffNode();
 		int bits = in.readBits(1);
 		if (bits == -1) throw new HuffException("illegal header starts with" + bits);
@@ -91,7 +118,7 @@ public class HuffProcessor {
 		}
 	}
 	
-	public void readCompressedBits(HuffNode root, BitInputStream in, BitOutputStream out) {
+	private void readCompressedBits(HuffNode root, BitInputStream in, BitOutputStream out) {
 		HuffNode current = root;
 		while (true) {
 			int bits = in.readBits(1);
@@ -100,7 +127,7 @@ public class HuffProcessor {
 			}
 			else {
 				if (bits == 0) current = current.myLeft;
-				else current = current.myRight;
+				else if (bits == 1) current = current.myRight;
 				if (current.myLeft == null && current.myRight == null) {
 					if (current.myValue == PSEUDO_EOF) {
 						break;
