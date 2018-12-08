@@ -96,12 +96,12 @@ public class HuffProcessor {
 		while (true) {
 			int bits = in.readBits(1);
 			if (bits == -1) {
-				throw new HuffException("bad input, no PSEUDO_EOF");
+				throw new HuffException("bad input, no PSEUDO_EOF" + bits);
 			}
 			else {
 				if (bits == 0) current = current.myLeft;
 				else current = current.myRight;
-				if (bits == 1) {
+				if (current.myLeft == null && current.myRight == null) {
 					if (current.myValue == PSEUDO_EOF) {
 						break;
 					}
