@@ -109,14 +109,14 @@ public class HuffProcessor {
 		codingHelper(root.myRight, s + "1", encodings);
 	}
 	
-	private HuffNode writeHeader(HuffNode root, BitOutputStream out) {
-		if (root.myLeft == null && root.myRight == null) {
-			out.writeBits(1, root.myValue);
-			return root;
-		}
-		writeHeader(root.myLeft, );
-		writeHeader(root.myRight, );
-	}
+//	private HuffNode writeHeader(HuffNode root, BitOutputStream out) {
+//		if (root.myLeft == null && root.myRight == null) {
+//			out.writeBits(1, root.myValue);
+//			return root;
+//		}
+//		//writeHeader(root.myLeft, out.writeBits(BITS_PER_WORD, root.myValue));
+//		//writeHeader(root.myRight, out.writeBits(BITS_PER_WORD, root.myValue));
+//	}
 	
 	
 	//private writeHeader(HuffNode root, BitOutputStream out) {
