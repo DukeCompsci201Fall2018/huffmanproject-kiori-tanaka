@@ -1,3 +1,4 @@
+import java.util.PriorityQueue;
 import javax.swing.tree.TreeNode;
 
 /**
@@ -43,8 +44,8 @@ public class HuffProcessor {
 	 */
 	public void compress(BitInputStream in, BitOutputStream out){
 		int[] counts = readForCounts(in);
-		//HuffNode root = makeTreeCounts(counts);
-		//String[] codings = makeCodingFromTree(root);
+		HuffNode root = makeTreeCounts(counts);
+		String[] codings = makeCodingFromTree(root);
 		
 		out.writeBits(BITS_PER_INT, HUFF_TREE);
 		//writeHeader(root,out);
@@ -62,11 +63,59 @@ public class HuffProcessor {
 	private int[] readForCounts(BitInputStream in) {
 		int[] freq = new int[ALPH_SIZE+1];
 		freq[PSEUDO_EOF] = 1;
-		int bits = in.readBits(BITS_PER_WORD);
-		while (bits != -1) {
+		while (true) {
+			int bits = in.readBits(BITS_PER_WORD);
+			if (bits != -1) {
 			freq[bits]++;
+			}
+			else {
+				break;
+			}
 		}
 		return freq;
+	}
+	
+	private HuffNode makeTreeCounts(int [] counts) {
+		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
+		for (int i = 0; i < counts.length; i++) {
+			if (counts[i] > 0) {
+				pq.add(new HuffNode(i, counts[i], null, null));
+			}
+		}
+		
+		while (pq.size() > 1) {
+			HuffNode left = pq.remove();
+			HuffNode right = pq.remove();
+			HuffNode t = new HuffNode(0, left.myWeight+right.myWeight, left, right);
+			pq.add(t);
+		}
+		HuffNode root = pq.remove();
+		return root;
+	}
+	
+	private String[] makeCodingFromTree(HuffNode root) {
+		String[] encodings = new String[ALPH_SIZE+1];
+		codingHelper(root,"",encodings);
+		return encodings;
+	}
+	
+	private void codingHelper(HuffNode root, String s, String[] encodings) {
+		if (root == null) return;
+		if (root.myLeft == null && root.myRight == null) {
+			encodings[root.myValue] = s; 
+			return;
+		}
+		codingHelper(root.myLeft, s + "0", encodings);
+		codingHelper(root.myRight, s + "1", encodings);
+	}
+	
+	private HuffNode writeHeader(HuffNode root, BitOutputStream out) {
+		if (root.myLeft == null && root.myRight == null) {
+			out.writeBits(1, root.myValue);
+			return root;
+		}
+		writeHeader(root.myLeft, );
+		writeHeader(root.myRight, );
 	}
 	
 	
